@@ -1,12 +1,12 @@
-name: 'Create Workspace'
-description: 'Create a kubernetes workspace'
+name: 'Create Namespace'
+description: 'Create a kubernetes namespace'
 author: 'local-ch'
 inputs:
   namespace:
     description: 'The name of the namespace that shall be created'
     required: true
   guild:
-    description: 'The name of the guild to create a workspace for [web/nodejs]'
+    description: 'The name of the guild to create a namespace for [web/nodejs]'
     required: true
     default: 'nodejs'
 outputs:

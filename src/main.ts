@@ -1,10 +1,10 @@
 import * as core from '@actions/core'
-import {createWorkspace} from './create_workspace'
+import {createNamespace} from './create_namespace'
 
 async function run(): Promise<void> {
   try {
-    const name = await createWorkspace(
-      core.getInput('branch-name'),
+    const name = await createNamespace(
+      core.getInput('namespace'),
       core.getInput('guild')
     )
     core.setOutput('name', name)
