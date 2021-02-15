@@ -1,11 +1,18 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Create Workspace'
+description: 'Create a kubernetes workspace'
+author: 'local-ch'
 inputs:
-  milliseconds: # change this
+  namespace:
+    description: 'The name of the namespace that shall be created'
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+  guild:
+    description: 'The name of the guild to create a workspace for [web/nodejs]'
+    required: true
+    default: 'nodejs'
+outputs:
+  name:
+    description: 'The name of the namespace that was created'
+
 runs:
   using: 'node12'
   main: 'dist/index.js'
