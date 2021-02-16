@@ -8,10 +8,9 @@ inputs:
   guild:
     description: 'The name of the guild to create a namespace for [web/nodejs]'
     required: true
-    default: 'nodejs'
   url:
     description: 'URL of namespace service to call'
-    required: true
+    required: false
     default: 'https://k8s-workspaces.local-stg.cloud'
 outputs:
   name:
