@@ -11,7 +11,7 @@ inputs:
     default: 'nodejs'
   url:
     description: 'URL of namespace service to call'
-    required: false
+    required: true
     default: 'https://k8s-workspaces.local-stg.cloud'
 outputs:
   name:
