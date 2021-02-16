@@ -5,7 +5,8 @@ async function run(): Promise<void> {
   try {
     const name = await createNamespace(
       core.getInput('namespace'),
-      core.getInput('guild')
+      core.getInput('guild'),
+      core.getInput('url')
     )
     core.setOutput('name', name)
   } catch (error) {

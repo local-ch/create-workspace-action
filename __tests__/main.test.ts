@@ -7,6 +7,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>
 
 let namespaceName: string
 const guild = 'nodejs'
+const url = 'https://k8s-workspaces.test/api/v1/namespaces/'
 
 beforeEach(() => {
   mockedAxios.post.mockResolvedValue({
@@ -22,7 +23,7 @@ describe('Happy Path', () => {
   namespaceName = 'jest-test-namespace-name'
 
   test('happy path', async () => {
-    const workspaceName = await createNamespace(namespaceName, guild)
+    const workspaceName = await createNamespace(namespaceName, guild, url)
     expect(workspaceName).toEqual(namespaceName)
   })
 })
@@ -32,12 +33,10 @@ describe('When namespace name is too long', () => {
     'test-app-pro-1234-this-is-a-brutally-long-namespace-name-which-exeeds-all-limitations'
 
   it('reduces the size of namespace name to suit limitations', async () => {
-    await createNamespace(namespaceName, guild)
-    expect(
-      mockedAxios.post
-    ).toHaveBeenCalledWith(
-      'https://k8s-workspaces.local-stg.cloud/api/v1/namespaces',
-      {name: namespaceName.substr(0, 42), guild}
-    )
+    await createNamespace(namespaceName, guild, url)
+    expect(mockedAxios.post).toHaveBeenCalledWith(url, {
+      name: namespaceName.substr(0, 42),
+      guild
+    })
   })
 })

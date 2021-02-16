@@ -23,3 +23,4 @@ jobs:
         with:
           namespace: 'test-workflow-branch'
           guild: 'nodejs'
+          url: 'https://run.mocky.io/v3/769939f1-77e5-4f98-8091-526751411b8d'
