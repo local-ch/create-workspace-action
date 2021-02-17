@@ -2,7 +2,7 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 2478:
+/***/ 7911:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -20,19 +20,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createWorkspace = void 0;
+exports.createNamespace = void 0;
 const axios_1 = __importDefault(__webpack_require__(6545));
-function createWorkspace(branchName, guild) {
+function createNamespace(name, guild, url) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield axios_1.default.post('https://k8s-workspaces.local-stg.cloud/api/v1/namespaces', {
+        const { data } = yield axios_1.default.post(url, {
             // when branch name is too long, API throws an error.
-            name: branchName.substr(0, 42),
+            name: name.substr(0, 42),
             guild
         });
         return data.name;
     });
 }
-exports.createWorkspace = createWorkspace;
+exports.createNamespace = createNamespace;
 
 
 /***/ }),
@@ -72,11 +72,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
-const create_workspace_1 = __webpack_require__(2478);
+const create_namespace_1 = __webpack_require__(7911);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const name = yield create_workspace_1.createWorkspace(core.getInput('branch-name'), core.getInput('guild'));
+            const name = yield create_namespace_1.createNamespace(core.getInput('namespace'), core.getInput('guild'), core.getInput('url'));
             core.setOutput('name', name);
         }
         catch (error) {
