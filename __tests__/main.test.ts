@@ -1,45 +1,72 @@
 import {createNamespace} from '../src/create_namespace'
-import * as process from 'process'
-import * as cp from 'child_process'
-import * as path from 'path'
 
 import axios from 'axios'
 jest.mock('axios')
 
-const mockedAxios = axios as jest.Mocked<typeof axios>
+describe('Create Namespace', () => {
+  const mockedAxios = axios as jest.Mocked<typeof axios>
 
-let namespaceName: string
-const guild = 'nodejs'
-const url = 'https://k8s-workspaces.test/api/v1/namespaces/'
+  let namespaceName = 'jest-test-namespace-name'
+  const guild = 'nodejs'
+  const url = 'https://k8s-workspaces.test/api/v1/namespaces/'
+  let statusCode: number
 
-beforeEach(() => {
-  mockedAxios.post.mockResolvedValue({
-    data: {
-      state: 'success',
-      self_destruct: '2021-03-08',
-      name: namespaceName
-    }
+  describe('Happy Path', () => {
+    beforeEach(() => {
+      mockedAxios.post.mockResolvedValue({
+        status: 201,
+        data: {
+          state: 'success',
+          self_destruct: '2021-03-08',
+          name: namespaceName
+        }
+      })
+    })
+
+    test('happy path', async () => {
+      const workspaceName = await createNamespace(namespaceName, guild, url)
+      expect(workspaceName).toEqual(namespaceName)
+    })
   })
-})
 
-describe('Happy Path', () => {
-  namespaceName = 'jest-test-namespace-name'
+  describe('When namespace name is too long', () => {
+    beforeEach(() => {
+      mockedAxios.post.mockResolvedValue({
+        status: 201,
+        data: {
+          state: 'success',
+          self_destruct: '2021-03-08',
+          name: namespaceName
+        }
+      })
+    })
+    namespaceName =
+      'test-app-pro-1234-this-is-a-brutally-long-namespace-name-which-exeeds-all-limitations'
 
-  test('happy path', async () => {
-    const workspaceName = await createNamespace(namespaceName, guild, url)
-    expect(workspaceName).toEqual(namespaceName)
+    it('reduces the size of namespace name to suit limitations', async () => {
+      await createNamespace(namespaceName, guild, url)
+      expect(mockedAxios.post).toHaveBeenCalledWith(url, {
+        name: namespaceName.substr(0, 42),
+        guild
+      })
+    })
   })
-})
 
-describe('When namespace name is too long', () => {
-  namespaceName =
-    'test-app-pro-1234-this-is-a-brutally-long-namespace-name-which-exeeds-all-limitations'
+  describe('When service returns a non-200 status code', () => {
+    beforeEach(() => {
+      mockedAxios.post.mockResolvedValue({
+        status: 406,
+        data: {
+          state: 'error',
+          message: 'Unknown HTTP code from k8s API, this is likely a bug'
+        }
+      })
+    })
 
-  it('reduces the size of namespace name to suit limitations', async () => {
-    await createNamespace(namespaceName, guild, url)
-    expect(mockedAxios.post).toHaveBeenCalledWith(url, {
-      name: namespaceName.substr(0, 42),
-      guild
+    it('throws an error', () => {
+      expect.assertions(1)
+
+      expect(createNamespace(namespaceName, guild, url)).rejects.toThrow('404')
     })
   })
 })
