@@ -15,10 +15,13 @@ jobs:
           npm install
       - run: |
           npm run all
+
   test: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: ./
         with:
-          milliseconds: 1000
+          namespace: 'test-workflow-branch'
+          guild: 'nodejs'
+          url: 'https://run.mocky.io/v3/769939f1-77e5-4f98-8091-526751411b8d'
