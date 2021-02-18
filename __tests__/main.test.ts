@@ -1,4 +1,7 @@
-import {createNamespace} from '../src/create_namespace'
+import {
+  createNamespace,
+  calculateNamespaceIdentifier
+} from '../src/create_namespace'
 
 import axios from 'axios'
 jest.mock('axios')
@@ -29,29 +32,6 @@ describe('Create Namespace', () => {
     })
   })
 
-  describe('When namespace name is too long', () => {
-    beforeEach(() => {
-      mockedAxios.post.mockResolvedValue({
-        status: 201,
-        data: {
-          state: 'success',
-          self_destruct: '2021-03-08',
-          name: namespaceName
-        }
-      })
-    })
-    namespaceName =
-      'test-app-pro-1234-this-is-a-brutally-long-namespace-name-which-exeeds-all-limitations'
-
-    it('reduces the size of namespace name to suit limitations', async () => {
-      await createNamespace(namespaceName, guild, url)
-      expect(mockedAxios.post).toHaveBeenCalledWith(url, {
-        name: namespaceName.substr(0, 42),
-        guild
-      })
-    })
-  })
-
   describe('When service returns a non-200 status code', () => {
     beforeEach(() => {
       mockedAxios.post.mockResolvedValue({
@@ -67,6 +47,41 @@ describe('Create Namespace', () => {
       expect.assertions(1)
 
       expect(createNamespace(namespaceName, guild, url)).rejects.toThrow('404')
+    })
+  })
+})
+
+describe('calculateNamespaceIdentifier', () => {
+  describe('When namespace name is too long', () => {
+    const appName = 'application-name'
+    const branchName = 'pro-1234-very-very-very-long-branch-name'
+    const revision = 'bcc2987ff153f1ff214b8ac7a91005c48e61b9eb'
+
+    it('starts with the full application name', () => {
+      const identifier = calculateNamespaceIdentifier(
+        appName,
+        branchName,
+        revision
+      )
+      expect(identifier).toMatch(new RegExp(`^${appName}`))
+    })
+
+    it('ends with the short (7 digit) github commit hash', () => {
+      const identifier = calculateNamespaceIdentifier(
+        appName,
+        branchName,
+        revision
+      )
+      expect(identifier).toMatch(new RegExp('bcc2987$'))
+    })
+
+    it('adheres to length restrictions from k8s-webservice', () => {
+      const identifier = calculateNamespaceIdentifier(
+        appName,
+        branchName,
+        revision
+      )
+      expect(identifier.length).toBeLessThanOrEqual(42)
     })
   })
 })
