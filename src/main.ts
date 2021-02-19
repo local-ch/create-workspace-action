@@ -1,10 +1,15 @@
 import * as core from '@actions/core'
-import {createNamespace} from './create_namespace'
+import {createNamespace, calculateNamespaceIdentifier} from './create_namespace'
 
 async function run(): Promise<void> {
   try {
+    const namespaceName = calculateNamespaceIdentifier(
+      core.getInput('application'),
+      core.getInput('branch'),
+      core.getInput('revision')
+    )
     const name = await createNamespace(
-      core.getInput('namespace'),
+      namespaceName,
       core.getInput('guild'),
       core.getInput('url')
     )

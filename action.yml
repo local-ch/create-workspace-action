@@ -2,9 +2,15 @@ name: 'Create Namespace'
 description: 'Create a kubernetes namespace'
 author: 'local-ch'
 inputs:
-  namespace:
-    description: 'The name of the namespace that shall be created'
+  application:
+    description: 'The application name'
     required: true
+  branch:
+    description: 'The name of the branch to create a namespace for'
+    required: true
+  revision:
+    description: 'Git commit-hash'
+    requried: true
   guild:
     description: 'The name of the guild to create a namespace for [web/nodejs]'
     required: true

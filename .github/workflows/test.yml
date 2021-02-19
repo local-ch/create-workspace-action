@@ -22,6 +22,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: ./
         with:
-          namespace: 'test-workflow-branch'
+          application: 'create-workspace-action'
+          branch: 'test-workflow-branch'
+          revision: 'caa4c60b1a00fd0f870bd51ba8901654e0252fee'
           guild: 'nodejs'
           url: 'https://run.mocky.io/v3/769939f1-77e5-4f98-8091-526751411b8d'
