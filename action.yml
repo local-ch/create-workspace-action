@@ -17,7 +17,7 @@ inputs:
   url:
     description: 'URL of namespace service to call'
     required: false
-    default: 'https://k8s-workspaces.local-stg.cloud'
+    default: 'https://k8s-workspaces.local-stg.cloud/api/v1/namespaces'
 outputs:
   name:
     description: 'The name of the namespace that was created'
