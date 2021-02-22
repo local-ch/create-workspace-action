@@ -8,9 +8,6 @@ inputs:
   branch:
     description: 'The name of the branch to create a namespace for'
     required: true
-  revision:
-    description: 'Git commit-hash'
-    requried: true
   guild:
     description: 'The name of the guild to create a namespace for [web/nodejs]'
     required: true

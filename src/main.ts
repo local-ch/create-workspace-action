@@ -5,8 +5,7 @@ async function run(): Promise<void> {
   try {
     const namespaceName = calculateNamespaceIdentifier(
       core.getInput('application'),
-      core.getInput('branch'),
-      core.getInput('revision')
+      core.getInput('branch')
     )
     const name = await createNamespace(
       namespaceName,
