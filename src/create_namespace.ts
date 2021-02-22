@@ -15,9 +15,7 @@ export async function createNamespace(
 
 export function calculateNamespaceIdentifier(
   appName: string,
-  branch: string,
-  revision: string
+  branch: string
 ): string {
-  const appIdentifier = `${appName}-${branch}`.substr(0, 34)
-  return `${appIdentifier}-${revision.substr(0, 7)}`
+  return `${appName}-${branch}`.substr(0, 41).replace(/[^\w]|_/, '-')
 }
