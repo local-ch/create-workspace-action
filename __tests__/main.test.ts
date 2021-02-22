@@ -12,7 +12,6 @@ describe('Create Namespace', () => {
   let namespaceName = 'jest-test-namespace-name'
   const guild = 'nodejs'
   const url = 'https://k8s-workspaces.test/api/v1/namespaces/'
-  let statusCode: number
 
   describe('Happy Path', () => {
     beforeEach(() => {
@@ -55,32 +54,14 @@ describe('calculateNamespaceIdentifier', () => {
   describe('When namespace name is too long', () => {
     const appName = 'application-name'
     const branchName = 'pro-1234-very-very-very-long-branch-name'
-    const revision = 'bcc2987ff153f1ff214b8ac7a91005c48e61b9eb'
 
     it('starts with the full application name', () => {
-      const identifier = calculateNamespaceIdentifier(
-        appName,
-        branchName,
-        revision
-      )
+      const identifier = calculateNamespaceIdentifier(appName, branchName)
       expect(identifier).toMatch(new RegExp(`^${appName}`))
     })
 
-    it('ends with the short (7 digit) github commit hash', () => {
-      const identifier = calculateNamespaceIdentifier(
-        appName,
-        branchName,
-        revision
-      )
-      expect(identifier).toMatch(new RegExp('bcc2987$'))
-    })
-
     it('adheres to length restrictions from k8s-webservice', () => {
-      const identifier = calculateNamespaceIdentifier(
-        appName,
-        branchName,
-        revision
-      )
+      const identifier = calculateNamespaceIdentifier(appName, branchName)
       expect(identifier.length).toBeLessThanOrEqual(42)
     })
   })
