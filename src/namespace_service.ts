@@ -2,6 +2,9 @@ import * as core from '@actions/core'
 import axios from 'axios'
 
 export class NamespaceService {
+  // k8s-namespaces service has a length restriction on namespace names
+  static readonly maxNamespaceLength = 41
+
   appName: string
   branchName: string
   guild: string
@@ -34,7 +37,7 @@ export class NamespaceService {
 
   private get namespace(): string {
     return `${this.appName}-${this.branchName}`
-      .substr(0, 41)
+      .substr(0, NamespaceService.maxNamespaceLength)
       .replace(/[^a-z0-9]|[ _]/g, '-')
   }
 
