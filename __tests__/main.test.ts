@@ -1,20 +1,25 @@
-import {
-  createNamespace,
-  calculateNamespaceIdentifier
-} from '../src/create_namespace'
+import {NamespaceService} from '../src/namespace_service'
 
 import axios from 'axios'
 jest.mock('axios')
 
-describe('Create Namespace', () => {
-  const mockedAxios = axios as jest.Mocked<typeof axios>
+import * as core from '@actions/core'
+jest.mock('@actions/core')
 
-  let namespaceName = 'jest-test-namespace-name'
-  const guild = 'nodejs'
-  const url = 'https://k8s-workspaces.test/api/v1/namespaces/'
+describe('NamespaceService', () => {
+  const mockedAxios = axios as jest.Mocked<typeof axios>
+  const mockedCore = core as jest.Mocked<typeof core>
+
+  let subject: NamespaceService
+  let appName = 'jest-app'
+  let branch = 'unit-testing'
+  let guild = 'jesters'
+  let serviceUrl = 'https://k8s-workspaces.test/api/v1/namespaces'
+  let namespaceName = `${appName}-${branch}`
 
   describe('Happy Path', () => {
     beforeEach(() => {
+      subject = new NamespaceService(appName, branch, guild, serviceUrl)
       mockedAxios.post.mockResolvedValue({
         status: 201,
         data: {
@@ -25,44 +30,77 @@ describe('Create Namespace', () => {
       })
     })
 
-    test('happy path', async () => {
-      const workspaceName = await createNamespace(namespaceName, guild, url)
-      expect(workspaceName).toEqual(namespaceName)
+    it('creates namespaces', async () => {
+      const namespaceName = await subject.createNamespace()
+      expect(namespaceName).toEqual(`${appName}-${branch}`)
+    })
+
+    it('uses serviceUrl', async () => {
+      await subject.createNamespace()
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        serviceUrl,
+        expect.anything()
+      )
+    })
+
+    it('Calls API with correct parameters', async () => {
+      await subject.createNamespace()
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({guild})
+      )
     })
   })
 
-  describe('When service returns a non-200 status code', () => {
+  describe('Reading default values', () => {
+    it('Reads default values from core inputs', () => {
+      new NamespaceService()
+
+      expect(mockedCore.getInput).toHaveBeenCalledWith('application')
+      expect(mockedCore.getInput).toHaveBeenCalledWith('branch')
+      expect(mockedCore.getInput).toHaveBeenCalledWith('guild')
+      expect(mockedCore.getInput).toHaveBeenCalledWith('url')
+    })
+  })
+
+  describe('Name sanitization', () => {
     beforeEach(() => {
+      branch =
+        'pro-1374-some_weirdly@never_ending-branch-name!containing-invalid-s#mbols'
+      subject = new NamespaceService(appName, branch, guild, serviceUrl)
       mockedAxios.post.mockResolvedValue({
-        status: 406,
-        data: {
-          state: 'error',
-          message: 'Unknown HTTP code from k8s API, this is likely a bug'
-        }
+        status: 201,
+        data: {name: namespaceName}
       })
     })
 
-    it('throws an error', () => {
-      expect.assertions(1)
-
-      expect(createNamespace(namespaceName, guild, url)).rejects.toThrow('404')
+    it('sanitizes branch names', async () => {
+      await subject.createNamespace()
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        serviceUrl,
+        expect.objectContaining({
+          name: 'jest-app-pro-1374-some-weirdly-never-endi'
+        })
+      )
     })
   })
-})
 
-describe('calculateNamespaceIdentifier', () => {
-  describe('When namespace name is too long', () => {
-    const appName = 'application-name'
-    const branchName = 'pro-1234-very-very-very-long-branch-name'
-
-    it('starts with the full application name', () => {
-      const identifier = calculateNamespaceIdentifier(appName, branchName)
-      expect(identifier).toMatch(new RegExp(`^${appName}`))
+  describe('Error handling', () => {
+    beforeEach(() => {
+      subject = new NamespaceService(appName, branch, guild, serviceUrl)
+      mockedAxios.post.mockImplementation(() => {
+        throw new Error()
+      })
     })
 
-    it('adheres to length restrictions from k8s-webservice', () => {
-      const identifier = calculateNamespaceIdentifier(appName, branchName)
-      expect(identifier.length).toBeLessThanOrEqual(42)
+    it('Logs and re-throws errors', async () => {
+      expect.assertions(1)
+
+      try {
+        await subject.createNamespace()
+      } catch (_error) {
+        expect(mockedCore.error).toHaveBeenCalled()
+      }
     })
   })
 })
