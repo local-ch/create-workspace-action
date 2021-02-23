@@ -2,41 +2,6 @@ require('./sourcemap-register.js');module.exports =
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 7911:
-/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
-
-"use strict";
-
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.createNamespace = void 0;
-const axios_1 = __importDefault(__webpack_require__(6545));
-function createNamespace(name, guild, url) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const { data } = yield axios_1.default.post(url, {
-            // when branch name is too long, API throws an error.
-            name: name.substr(0, 42),
-            guild
-        });
-        return data.name;
-    });
-}
-exports.createNamespace = createNamespace;
-
-
-/***/ }),
-
 /***/ 3109:
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
@@ -72,12 +37,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__webpack_require__(2186));
-const create_namespace_1 = __webpack_require__(7911);
+const namespace_service_1 = __webpack_require__(3361);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const name = yield create_namespace_1.createNamespace(core.getInput('namespace'), core.getInput('guild'), core.getInput('url'));
-            core.setOutput('name', name);
+            const service = new namespace_service_1.NamespaceService();
+            service.createNamespace();
         }
         catch (error) {
             core.setFailed(error.message);
@@ -85,6 +50,86 @@ function run() {
     });
 }
 run();
+
+
+/***/ }),
+
+/***/ 3361:
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NamespaceService = void 0;
+const core = __importStar(__webpack_require__(2186));
+const axios_1 = __importDefault(__webpack_require__(6545));
+class NamespaceService {
+    constructor(appName = core.getInput('application'), branchName = core.getInput('branch'), guild = core.getInput('guild'), serviceUrl = core.getInput('url')) {
+        this.appName = appName;
+        this.branchName = branchName;
+        this.guild = guild;
+        this.serviceUrl = serviceUrl;
+    }
+    createNamespace() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                core.info(`POST ${this.serviceUrl} === ${JSON.stringify(this.payload)}`);
+                const { status, data } = yield axios_1.default.post(this.serviceUrl, this.payload);
+                core.info(`Response:: ${status} === Data: ${JSON.stringify(data)}`);
+                return data.name;
+            }
+            catch (error) {
+                core.error(`Error received from k8s-workspaces service: ${error.message}`);
+                throw error;
+            }
+        });
+    }
+    get namespace() {
+        return `${this.appName}-${this.branchName}`
+            .substr(0, NamespaceService.maxNamespaceLength)
+            .replace(/[^a-z0-9]|[ _]/g, '-');
+    }
+    get payload() {
+        return {
+            name: this.namespace,
+            guild: this.guild
+        };
+    }
+}
+exports.NamespaceService = NamespaceService;
+// k8s-namespaces service has a length restriction on namespace names
+NamespaceService.maxNamespaceLength = 41;
 
 
 /***/ }),
